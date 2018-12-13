@@ -1,0 +1,47 @@
+from __future__ import print_function
+import json
+import hashlib
+from virus_total_apis import PublicApi as VirusTotalPublicApi
+import sklearn.ensemble as skensemble
+import pefile 
+import argparse
+import hashlib
+import array
+import sys
+import math
+import csv
+
+API_KEY ='4c771b68534b80fafcaea4753dbe72ed88706e63f4df77335a72549d80014fdb'
+
+
+def prelim(fname):
+    #for signature based detection  
+    print("Conducting preliminary test")
+    hash_md5 = hashlib.md5()
+    with open(fname,"rb") as f:
+        for chunk in iter(lambda: f.read(4096),b""):
+            hash_md5.update(chunk)
+    md5=hash_md5.hexdigest()        
+   
+    return md5
+        
+
+if __name__ == '__main__':
+
+    parser=argparse.ArgumentParser(description='Detect malware')
+    parser.add_argument('FILE',help='File to be tested')
+    args=parser.parse_args()
+
+
+    md5=prelim(args.FILE)
+
+
+    EICAR_MD5 = md5
+    try:
+        vt = VirusTotalPublicApi(API_KEY)
+        response = vt.get_file_report(EICAR_MD5)
+        print(json.dumps(response, sort_keys=False, indent=4))
+    
+    except :
+        print("Internet Connection Not Found") 
+    

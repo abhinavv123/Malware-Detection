@@ -1,0 +1,45 @@
+from subprocess import call
+from pymisp import PyMISP 
+from dicttoxml import dicttoxml
+import hashlib
+import xml.etree.ElementTree as ET
+import urllib
+def internet_on():
+    try:
+        urllib.request.urlopen('http://149.13.33.15', timeout=1)
+        return True
+    except urllib.error.URLError as err: 
+        return False
+def prelim(fname):
+    #for signature based detection  
+    print("Testing at MISP")
+    hash_md5 = hashlib.md5()
+    with open(fname,"rb") as f:
+        for chunk in iter(lambda: f.read(4096),b""):
+            hash_md5.update(chunk)
+    md5=hash_md5.hexdigest()        
+   
+    return md5
+def mispextract(fpath):
+        md5=prelim(fpath)
+       # md5="626576e5f0f85d77c460a322a92bb267"
+        url="https://misppriv.circl.lu"
+        apikey="6hmcjLFKtbk9i0eSGvxeUZ6RRJdcC5zRhafoNmXs"
+        api=PyMISP(url,apikey,ssl=True, out_type='json' ,debug=False, proxies=None)
+
+        response = api.search_all(md5)
+        print (response)
+        length=len(response["response"])
+        print(md5)
+       #print(len(list(root)))
+        if length>=1:
+	        print("malicious")
+        else:
+	        print("not found in MISP")
+
+
+#call(["cd ../../Downloads/PyMISP-master/PyMISP/examples"])
+
+
+
+#call(["ls", "-l"])
